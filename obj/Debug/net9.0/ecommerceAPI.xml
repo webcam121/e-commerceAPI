@@ -1,0 +1,326 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>ecommerceAPI</name>
+    </assembly>
+    <members>
+        <member name="T:ecommerceAPI.Controllers.AttributeController">
+            <summary>
+            Controller for managing attributes in the e-commerce system
+            </summary>
+        </member>
+        <member name="M:ecommerceAPI.Controllers.AttributeController.GetAttributes">
+            <summary>
+            Gets all attributes with their values
+            </summary>
+            <returns>A list of attributes with their values</returns>
+        </member>
+        <member name="M:ecommerceAPI.Controllers.AttributeController.GetAttribute(System.Int32)">
+            <summary>
+            Gets a specific attribute with its values
+            </summary>
+            <param name="id">The ID of the attribute</param>
+            <returns>The attribute with its values</returns>
+        </member>
+        <member name="M:ecommerceAPI.Controllers.AttributeController.CreateAttribute(ecommerceAPI.Controllers.AttributeCreateDto)">
+            <summary>
+            Creates a new attribute
+            </summary>
+            <param name="attributeDto">The attribute data</param>
+            <returns>The created attribute</returns>
+        </member>
+        <member name="M:ecommerceAPI.Controllers.AttributeController.UpdateAttribute(System.Int32,ecommerceAPI.Controllers.AttributeCreateDto)">
+            <summary>
+            Updates an existing attribute
+            </summary>
+            <param name="id">The ID of the attribute to update</param>
+            <param name="attributeDto">The updated attribute data</param>
+            <returns>The updated attribute</returns>
+        </member>
+        <member name="M:ecommerceAPI.Controllers.AttributeController.DeleteAttribute(System.Int32)">
+            <summary>
+            Deletes an attribute
+            </summary>
+            <param name="id">The ID of the attribute to delete</param>
+            <returns>No content if successful</returns>
+        </member>
+        <member name="T:ecommerceAPI.Controllers.AttributeResponseDto">
+            <summary>
+            Data transfer object for attribute response
+            </summary>
+        </member>
+        <member name="P:ecommerceAPI.Controllers.AttributeResponseDto.Id">
+            <summary>
+            The ID of the attribute
+            </summary>
+        </member>
+        <member name="P:ecommerceAPI.Controllers.AttributeResponseDto.Name">
+            <summary>
+            The name of the attribute
+            </summary>
+        </member>
+        <member name="P:ecommerceAPI.Controllers.AttributeResponseDto.Description">
+            <summary>
+            The description of the attribute
+            </summary>
+        </member>
+        <member name="P:ecommerceAPI.Controllers.AttributeResponseDto.Values">
+            <summary>
+            The list of values for this attribute
+            </summary>
+        </member>
+        <member name="T:ecommerceAPI.Controllers.AttributeCreateDto">
+            <summary>
+            Data transfer object for creating or updating an attribute
+            </summary>
+        </member>
+        <member name="P:ecommerceAPI.Controllers.AttributeCreateDto.Name">
+            <summary>
+            The name of the attribute
+            </summary>
+        </member>
+        <member name="P:ecommerceAPI.Controllers.AttributeCreateDto.Description">
+            <summary>
+            The description of the attribute
+            </summary>
+        </member>
+        <member name="P:ecommerceAPI.Controllers.AttributeCreateDto.Values">
+            <summary>
+            The list of values for this attribute
+            </summary>
+        </member>
+        <member name="T:ecommerceAPI.Controllers.CategoryController">
+            <summary>
+            Controller for managing categories in the e-commerce system
+            </summary>
+        </member>
+        <member name="M:ecommerceAPI.Controllers.CategoryController.GetCategories">
+            <summary>
+            Gets all categories with their attributes
+            </summary>
+            <returns>A list of categories</returns>
+        </member>
+        <member name="M:ecommerceAPI.Controllers.CategoryController.GetCategory(System.Int32)">
+            <summary>
+            Gets a specific category by ID
+            </summary>
+            <param name="id">The ID of the category</param>
+            <returns>The category with its attributes</returns>
+        </member>
+        <member name="M:ecommerceAPI.Controllers.CategoryController.CreateCategory(ecommerceAPI.Controllers.CategoryCreateDto)">
+            <summary>
+            Creates a new category
+            </summary>
+            <param name="categoryDto">The category data including attribute IDs</param>
+            <returns>The created category</returns>
+        </member>
+        <member name="M:ecommerceAPI.Controllers.CategoryController.UpdateCategory(System.Int32,ecommerceAPI.Controllers.CategoryCreateDto)">
+            <summary>
+            Updates an existing category
+            </summary>
+            <param name="id">The ID of the category to update</param>
+            <param name="categoryDto">The updated category data including attribute IDs</param>
+            <returns>The updated category</returns>
+        </member>
+        <member name="M:ecommerceAPI.Controllers.CategoryController.DeleteCategory(System.Int32)">
+            <summary>
+            Deletes a category
+            </summary>
+            <param name="id">The ID of the category to delete</param>
+            <returns>No content if successful</returns>
+        </member>
+        <member name="T:ecommerceAPI.Controllers.CategoryResponseDto">
+            <summary>
+            Data transfer object for category response
+            </summary>
+        </member>
+        <member name="T:ecommerceAPI.Controllers.CategoryAttributeResponseDto">
+            <summary>
+            Data transfer object for category attribute response
+            </summary>
+        </member>
+        <member name="T:ecommerceAPI.Controllers.CategoryCreateDto">
+            <summary>
+            Data transfer object for creating or updating a category
+            </summary>
+        </member>
+        <member name="P:ecommerceAPI.Controllers.CategoryCreateDto.Name">
+            <summary>
+            The name of the category
+            </summary>
+        </member>
+        <member name="P:ecommerceAPI.Controllers.CategoryCreateDto.Description">
+            <summary>
+            The description of the category
+            </summary>
+        </member>
+        <member name="P:ecommerceAPI.Controllers.CategoryCreateDto.AttributeIds">
+            <summary>
+            The IDs of the attributes to associate with the category
+            </summary>
+        </member>
+        <member name="T:ecommerceAPI.Controllers.DatabaseController">
+            <summary>
+            Controller for database management operations
+            </summary>
+        </member>
+        <member name="M:ecommerceAPI.Controllers.DatabaseController.SeedDatabase">
+            <summary>
+            Seeds the database with initial data
+            </summary>
+            <returns>Success message</returns>
+        </member>
+        <member name="M:ecommerceAPI.Controllers.DatabaseController.ReseedDatabase">
+            <summary>
+            Reseeds the database with initial data (clears existing data first)
+            </summary>
+            <returns>Success message</returns>
+        </member>
+        <member name="T:ecommerceAPI.Controllers.ProductController">
+            <summary>
+            Controller for managing products in the e-commerce system
+            </summary>
+        </member>
+        <member name="M:ecommerceAPI.Controllers.ProductController.GetProducts">
+            <summary>
+            Gets all products with their categories and attributes
+            </summary>
+            <returns>A list of products</returns>
+        </member>
+        <member name="M:ecommerceAPI.Controllers.ProductController.GetProduct(System.Int32)">
+            <summary>
+            Gets a specific product by ID
+            </summary>
+            <param name="id">The ID of the product</param>
+            <returns>The product with its category and attributes</returns>
+        </member>
+        <member name="M:ecommerceAPI.Controllers.ProductController.GetProductsByCategory(System.Int32)">
+            <summary>
+            Gets all products in a specific category
+            </summary>
+            <param name="categoryId">The ID of the category</param>
+            <returns>A list of products in the category</returns>
+        </member>
+        <member name="M:ecommerceAPI.Controllers.ProductController.CreateProduct(ecommerceAPI.Models.Product)">
+            <summary>
+            Creates a new product
+            </summary>
+            <param name="product">The product to create</param>
+            <returns>The created product</returns>
+        </member>
+        <member name="M:ecommerceAPI.Controllers.ProductController.UpdateProduct(System.Int32,ecommerceAPI.Models.Product)">
+            <summary>
+            Updates an existing product
+            </summary>
+            <param name="id">The ID of the product to update</param>
+            <param name="product">The updated product data</param>
+            <returns>No content if successful</returns>
+        </member>
+        <member name="M:ecommerceAPI.Controllers.ProductController.DeleteProduct(System.Int32)">
+            <summary>
+            Deletes a product
+            </summary>
+            <param name="id">The ID of the product to delete</param>
+            <returns>No content if successful</returns>
+        </member>
+        <member name="M:ecommerceAPI.Controllers.ProductController.AddProductAttribute(System.Int32,ecommerceAPI.Models.ProductAttributeValue)">
+            <summary>
+            Adds an attribute value to a product
+            </summary>
+            <param name="id">The ID of the product</param>
+            <param name="attributeValue">The attribute value to add</param>
+            <returns>The updated product</returns>
+        </member>
+        <member name="M:ecommerceAPI.Controllers.ProductController.RemoveProductAttribute(System.Int32,System.Int32)">
+            <summary>
+            Removes an attribute value from a product
+            </summary>
+            <param name="id">The ID of the product</param>
+            <param name="attributeValueId">The ID of the attribute value to remove</param>
+            <returns>No content if successful</returns>
+        </member>
+        <member name="M:ecommerceAPI.Controllers.ProductController.FilterProducts(ecommerceAPI.Controllers.ProductFilterDto)">
+            <summary>
+            Filters products by category, category attributes, and attribute values
+            </summary>
+            <param name="filter">The filter criteria</param>
+            <returns>A list of filtered products</returns>
+        </member>
+        <member name="T:ecommerceAPI.Controllers.ProductFilterDto">
+            <summary>
+            Data transfer object for product filtering
+            </summary>
+        </member>
+        <member name="P:ecommerceAPI.Controllers.ProductFilterDto.CategoryId">
+            <summary>
+            The ID of the category to filter by
+            </summary>
+        </member>
+        <member name="P:ecommerceAPI.Controllers.ProductFilterDto.AttributeFilters">
+            <summary>
+            The list of attribute filters to apply
+            </summary>
+        </member>
+        <member name="T:ecommerceAPI.Controllers.AttributeFilterDto">
+            <summary>
+            Data transfer object for attribute filtering
+            </summary>
+        </member>
+        <member name="P:ecommerceAPI.Controllers.AttributeFilterDto.CategoryAttributeId">
+            <summary>
+            The ID of the category attribute
+            </summary>
+        </member>
+        <member name="P:ecommerceAPI.Controllers.AttributeFilterDto.Value">
+            <summary>
+            The value of the attribute to filter by
+            </summary>
+        </member>
+        <member name="T:ecommerceAPI.Controllers.ProductResponseDto">
+            <summary>
+            Data transfer object for product response
+            </summary>
+        </member>
+        <member name="T:ecommerceAPI.Controllers.ProductAttributeDto">
+            <summary>
+            Data transfer object for product attribute
+            </summary>
+        </member>
+        <member name="T:ecommerceAPI.Migrations.InitialCreate">
+            <inheritdoc />
+        </member>
+        <member name="M:ecommerceAPI.Migrations.InitialCreate.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:ecommerceAPI.Migrations.InitialCreate.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:ecommerceAPI.Migrations.InitialCreate.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:ecommerceAPI.Migrations.UpdateCategoryAttributeRelationship">
+            <inheritdoc />
+        </member>
+        <member name="M:ecommerceAPI.Migrations.UpdateCategoryAttributeRelationship.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:ecommerceAPI.Migrations.UpdateCategoryAttributeRelationship.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:ecommerceAPI.Migrations.UpdateCategoryAttributeRelationship.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:ecommerceAPI.Migrations.AddRecommendedFieldToProduct">
+            <inheritdoc />
+        </member>
+        <member name="M:ecommerceAPI.Migrations.AddRecommendedFieldToProduct.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:ecommerceAPI.Migrations.AddRecommendedFieldToProduct.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:ecommerceAPI.Migrations.AddRecommendedFieldToProduct.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+    </members>
+</doc>
