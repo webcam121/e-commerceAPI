@@ -124,3 +124,4 @@ E:\Projects\ecommerceAPI\bin\Debug\net9.0\Swashbuckle.AspNetCore.Swagger.dll
 E:\Projects\ecommerceAPI\bin\Debug\net9.0\Swashbuckle.AspNetCore.SwaggerGen.dll
 E:\Projects\ecommerceAPI\bin\Debug\net9.0\Swashbuckle.AspNetCore.SwaggerUI.dll
 E:\Projects\ecommerceAPI\obj\Debug\net9.0\ecommerceAPI.xml
+E:\Projects\ecommerceAPI\obj\Debug\net9.0\ecommerceAPI.sourcelink.json

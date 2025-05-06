@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ecommerceAPI.Data;
 using ecommerceAPI.Models;
+using ecommerceAPI.DTOs;
 using System.ComponentModel.DataAnnotations;
 
 namespace ecommerceAPI.Controllers;
@@ -48,6 +49,7 @@ public class ProductController : ControllerBase
                 IsRecommended = p.IsRecommended,
                 Attributes = p.AttributeValues.Select(pav => new ProductAttributeDto
                 {
+                    AttributeId = pav.AttributeValue.CategoryAttributeId,
                     AttributeName = pav.AttributeValue.CategoryAttribute.Name,
                     Value = pav.AttributeValue.Value
                 }).ToList()
@@ -63,7 +65,7 @@ public class ProductController : ControllerBase
     /// <param name="id">The ID of the product</param>
     /// <returns>The product with its category and attributes</returns>
     [HttpGet("{id}")]
-    public async Task<ActionResult<Product>> GetProduct(int id)
+    public async Task<ActionResult<ProductResponseDto>> GetProduct(int id)
     {
         var product = await _context.Products
             .Include(p => p.Category)
@@ -77,7 +79,27 @@ public class ProductController : ControllerBase
             return NotFound();
         }
 
-        return product;
+        return new ProductResponseDto
+        {
+            Id = product.Id,
+            Name = product.Name,
+            Description = product.Description,
+            Price = product.Price,
+            StockQuantity = product.StockQuantity,
+            CategoryId = product.CategoryId,
+            CategoryName = product.Category.Name,
+            ImageBase64 = product.ImageBase64,
+            ImageContentType = product.ImageContentType,
+            CreatedAt = product.CreatedAt,
+            UpdatedAt = product.UpdatedAt,
+            IsRecommended = product.IsRecommended,
+            Attributes = product.AttributeValues.Select(pav => new ProductAttributeDto
+            {
+                AttributeId = pav.AttributeValue.CategoryAttributeId,
+                AttributeName = pav.AttributeValue.CategoryAttribute.Name,
+                Value = pav.AttributeValue.Value
+            }).ToList()
+        };
     }
 
     /// <summary>
@@ -86,7 +108,7 @@ public class ProductController : ControllerBase
     /// <param name="categoryId">The ID of the category</param>
     /// <returns>A list of products in the category</returns>
     [HttpGet("category/{categoryId}")]
-    public async Task<ActionResult<IEnumerable<Product>>> GetProductsByCategory(int categoryId)
+    public async Task<ActionResult<IEnumerable<ProductResponseDto>>> GetProductsByCategory(int categoryId)
     {
         return await _context.Products
             .Include(p => p.Category)
@@ -94,26 +116,106 @@ public class ProductController : ControllerBase
                 .ThenInclude(pav => pav.AttributeValue)
                     .ThenInclude(av => av.CategoryAttribute)
             .Where(p => p.CategoryId == categoryId)
+            .Select(p => new ProductResponseDto
+            {
+                Id = p.Id,
+                Name = p.Name,
+                Description = p.Description,
+                Price = p.Price,
+                StockQuantity = p.StockQuantity,
+                CategoryId = p.CategoryId,
+                CategoryName = p.Category.Name,
+                ImageBase64 = p.ImageBase64,
+                ImageContentType = p.ImageContentType,
+                CreatedAt = p.CreatedAt,
+                UpdatedAt = p.UpdatedAt,
+                IsRecommended = p.IsRecommended,
+                Attributes = p.AttributeValues.Select(pav => new ProductAttributeDto
+                {
+                    AttributeId = pav.AttributeValue.CategoryAttributeId,
+                    AttributeName = pav.AttributeValue.CategoryAttribute.Name,
+                    Value = pav.AttributeValue.Value
+                }).ToList()
+            })
             .ToListAsync();
     }
 
     /// <summary>
     /// Creates a new product
     /// </summary>
-    /// <param name="product">The product to create</param>
+    /// <param name="name">Product name</param>
+    /// <param name="description">Product description</param>
+    /// <param name="price">Product price</param>
+    /// <param name="stockQuantity">Product stock quantity</param>
+    /// <param name="categoryId">Category ID</param>
+    /// <param name="image">Product image file</param>
+    /// <param name="isRecommended">Whether the product is recommended</param>
+    /// <param name="attributeValueIds">List of attribute value IDs</param>
     /// <returns>The created product</returns>
     [HttpPost]
-    public async Task<ActionResult<Product>> CreateProduct(Product product)
+    public async Task<ActionResult<Product>> CreateProduct(
+        [FromForm][Required] string name,
+        [FromForm] string? description,
+        [FromForm][Required] decimal price,
+        [FromForm] int stockQuantity,
+        [FromForm][Required] int categoryId,
+        [FromForm] IFormFile? image,
+        [FromForm] bool isRecommended = false,
+        [FromForm] List<int>? attributeValueIds = null)
     {
         // Validate category exists
-        if (!await _context.Categories.AnyAsync(c => c.Id == product.CategoryId))
+        if (!await _context.Categories.AnyAsync(c => c.Id == categoryId))
         {
             return BadRequest("Invalid category ID");
         }
 
-        product.CreatedAt = DateTime.UtcNow;
+        string? imageBase64 = null;
+        string? imageContentType = null;
+
+        // Process image if provided
+        if (image != null)
+        {
+            if (image.Length > 10 * 1024 * 1024) // 10MB limit
+            {
+                return BadRequest("Image size must be less than 10MB");
+            }
+
+            using var ms = new MemoryStream();
+            await image.CopyToAsync(ms);
+            imageBase64 = Convert.ToBase64String(ms.ToArray());
+            imageContentType = image.ContentType;
+        }
+
+        // Create new product
+        var product = new Product
+        {
+            Name = name,
+            Description = description,
+            Price = price,
+            StockQuantity = stockQuantity,
+            CategoryId = categoryId,
+            ImageBase64 = imageBase64,
+            ImageContentType = imageContentType,
+            IsRecommended = isRecommended,
+            CreatedAt = DateTime.UtcNow
+        };
+
         _context.Products.Add(product);
         await _context.SaveChangesAsync();
+
+        // Add attribute values if provided
+        if (attributeValueIds != null && attributeValueIds.Any())
+        {
+            var productAttributeValues = attributeValueIds.Select(attributeValueId => 
+                new ProductAttributeValue 
+                { 
+                    ProductId = product.Id, 
+                    AttributeValueId = attributeValueId 
+                });
+
+            await _context.ProductAttributeValues.AddRangeAsync(productAttributeValues);
+            await _context.SaveChangesAsync();
+        }
 
         return CreatedAtAction(nameof(GetProduct), new { id = product.Id }, product);
     }
@@ -122,16 +224,27 @@ public class ProductController : ControllerBase
     /// Updates an existing product
     /// </summary>
     /// <param name="id">The ID of the product to update</param>
-    /// <param name="product">The updated product data</param>
+    /// <param name="name">Product name</param>
+    /// <param name="description">Product description</param>
+    /// <param name="price">Product price</param>
+    /// <param name="stockQuantity">Product stock quantity</param>
+    /// <param name="categoryId">Category ID</param>
+    /// <param name="image">Product image file</param>
+    /// <param name="isRecommended">Whether the product is recommended</param>
+    /// <param name="attributeValueIds">List of attribute value IDs</param>
     /// <returns>No content if successful</returns>
     [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateProduct(int id, Product product)
+    public async Task<IActionResult> UpdateProduct(
+        int id,
+        [FromForm][Required] string name,
+        [FromForm] string? description,
+        [FromForm][Required] decimal price,
+        [FromForm] int stockQuantity,
+        [FromForm][Required] int categoryId,
+        [FromForm] IFormFile? image,
+        [FromForm] bool isRecommended = false,
+        [FromForm] List<int>? attributeValueIds = null)
     {
-        if (id != product.Id)
-        {
-            return BadRequest();
-        }
-
         var existingProduct = await _context.Products.FindAsync(id);
         if (existingProduct == null)
         {
@@ -139,20 +252,55 @@ public class ProductController : ControllerBase
         }
 
         // Validate category exists
-        if (!await _context.Categories.AnyAsync(c => c.Id == product.CategoryId))
+        if (!await _context.Categories.AnyAsync(c => c.Id == categoryId))
         {
             return BadRequest("Invalid category ID");
         }
 
+        // Process image if provided
+        if (image != null)
+        {
+            if (image.Length > 10 * 1024 * 1024) // 10MB limit
+            {
+                return BadRequest("Image size must be less than 10MB");
+            }
+
+            using var ms = new MemoryStream();
+            await image.CopyToAsync(ms);
+            existingProduct.ImageBase64 = Convert.ToBase64String(ms.ToArray());
+            existingProduct.ImageContentType = image.ContentType;
+        }
+
         // Update properties
-        existingProduct.Name = product.Name;
-        existingProduct.Description = product.Description;
-        existingProduct.Price = product.Price;
-        existingProduct.StockQuantity = product.StockQuantity;
-        existingProduct.CategoryId = product.CategoryId;
-        existingProduct.ImageBase64 = product.ImageBase64;
-        existingProduct.ImageContentType = product.ImageContentType;
+        existingProduct.Name = name;
+        existingProduct.Description = description;
+        existingProduct.Price = price;
+        existingProduct.StockQuantity = stockQuantity;
+        existingProduct.CategoryId = categoryId;
+        existingProduct.IsRecommended = isRecommended;
         existingProduct.UpdatedAt = DateTime.UtcNow;
+
+        // Update attribute values if provided
+        if (attributeValueIds != null)
+        {
+            // Remove existing attribute values
+            var existingAttributeValues = await _context.ProductAttributeValues
+                .Where(pav => pav.ProductId == id)
+                .ToListAsync();
+            _context.ProductAttributeValues.RemoveRange(existingAttributeValues);
+
+            // Add new attribute values
+            if (attributeValueIds.Any())
+            {
+                var newAttributeValues = attributeValueIds.Select(attributeValueId =>
+                    new ProductAttributeValue
+                    {
+                        ProductId = id,
+                        AttributeValueId = attributeValueId
+                    });
+                await _context.ProductAttributeValues.AddRangeAsync(newAttributeValues);
+            }
+        }
 
         try
         {
@@ -197,7 +345,7 @@ public class ProductController : ControllerBase
     /// <param name="attributeValue">The attribute value to add</param>
     /// <returns>The updated product</returns>
     [HttpPost("{id}/attributes")]
-    public async Task<ActionResult<Product>> AddProductAttribute(int id, ProductAttributeValue attributeValue)
+    public async Task<ActionResult<ProductResponseDto>> AddProductAttribute(int id, ProductAttributeValue attributeValue)
     {
         var product = await _context.Products.FindAsync(id);
         if (product == null)
@@ -341,6 +489,7 @@ public class ProductResponseDto
 /// </summary>
 public class ProductAttributeDto
 {
+    public int AttributeId { get; set; }
     public string AttributeName { get; set; } = string.Empty;
     public string Value { get; set; } = string.Empty;
 } 

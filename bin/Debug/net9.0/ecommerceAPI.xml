@@ -201,19 +201,33 @@
             <param name="categoryId">The ID of the category</param>
             <returns>A list of products in the category</returns>
         </member>
-        <member name="M:ecommerceAPI.Controllers.ProductController.CreateProduct(ecommerceAPI.Models.Product)">
+        <member name="M:ecommerceAPI.Controllers.ProductController.CreateProduct(System.String,System.String,System.Decimal,System.Int32,System.Int32,Microsoft.AspNetCore.Http.IFormFile,System.Boolean,System.Collections.Generic.List{System.Int32})">
             <summary>
             Creates a new product
             </summary>
-            <param name="product">The product to create</param>
+            <param name="name">Product name</param>
+            <param name="description">Product description</param>
+            <param name="price">Product price</param>
+            <param name="stockQuantity">Product stock quantity</param>
+            <param name="categoryId">Category ID</param>
+            <param name="image">Product image file</param>
+            <param name="isRecommended">Whether the product is recommended</param>
+            <param name="attributeValueIds">List of attribute value IDs</param>
             <returns>The created product</returns>
         </member>
-        <member name="M:ecommerceAPI.Controllers.ProductController.UpdateProduct(System.Int32,ecommerceAPI.Models.Product)">
+        <member name="M:ecommerceAPI.Controllers.ProductController.UpdateProduct(System.Int32,System.String,System.String,System.Decimal,System.Int32,System.Int32,Microsoft.AspNetCore.Http.IFormFile,System.Boolean,System.Collections.Generic.List{System.Int32})">
             <summary>
             Updates an existing product
             </summary>
             <param name="id">The ID of the product to update</param>
-            <param name="product">The updated product data</param>
+            <param name="name">Product name</param>
+            <param name="description">Product description</param>
+            <param name="price">Product price</param>
+            <param name="stockQuantity">Product stock quantity</param>
+            <param name="categoryId">Category ID</param>
+            <param name="image">Product image file</param>
+            <param name="isRecommended">Whether the product is recommended</param>
+            <param name="attributeValueIds">List of attribute value IDs</param>
             <returns>No content if successful</returns>
         </member>
         <member name="M:ecommerceAPI.Controllers.ProductController.DeleteProduct(System.Int32)">
