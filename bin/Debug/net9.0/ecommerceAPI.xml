@@ -201,7 +201,7 @@
             <param name="categoryId">The ID of the category</param>
             <returns>A list of products in the category</returns>
         </member>
-        <member name="M:ecommerceAPI.Controllers.ProductController.CreateProduct(System.String,System.String,System.Decimal,System.Int32,System.Int32,Microsoft.AspNetCore.Http.IFormFile,System.Boolean,System.Collections.Generic.List{System.Int32})">
+        <member name="M:ecommerceAPI.Controllers.ProductController.CreateProduct(System.String,System.String,System.Decimal,System.Int32,System.Int32,Microsoft.AspNetCore.Http.IFormFile,System.Boolean,System.String)">
             <summary>
             Creates a new product
             </summary>
@@ -212,10 +212,10 @@
             <param name="categoryId">Category ID</param>
             <param name="image">Product image file</param>
             <param name="isRecommended">Whether the product is recommended</param>
-            <param name="attributeValueIds">List of attribute value IDs</param>
+            <param name="attributeValueIds">Comma-separated list of attribute value IDs</param>
             <returns>The created product</returns>
         </member>
-        <member name="M:ecommerceAPI.Controllers.ProductController.UpdateProduct(System.Int32,System.String,System.String,System.Decimal,System.Int32,System.Int32,Microsoft.AspNetCore.Http.IFormFile,System.Boolean,System.Collections.Generic.List{System.Int32})">
+        <member name="M:ecommerceAPI.Controllers.ProductController.UpdateProduct(System.Int32,System.String,System.String,System.Decimal,System.Int32,System.Int32,Microsoft.AspNetCore.Http.IFormFile,System.Boolean,System.String)">
             <summary>
             Updates an existing product
             </summary>
@@ -227,7 +227,7 @@
             <param name="categoryId">Category ID</param>
             <param name="image">Product image file</param>
             <param name="isRecommended">Whether the product is recommended</param>
-            <param name="attributeValueIds">List of attribute value IDs</param>
+            <param name="attributeValueIds">Comma-separated list of attribute value IDs</param>
             <returns>No content if successful</returns>
         </member>
         <member name="M:ecommerceAPI.Controllers.ProductController.DeleteProduct(System.Int32)">
@@ -265,29 +265,16 @@
             Data transfer object for product filtering
             </summary>
         </member>
-        <member name="P:ecommerceAPI.Controllers.ProductFilterDto.CategoryId">
+        <member name="P:ecommerceAPI.Controllers.ProductFilterDto.CategoryIds">
             <summary>
-            The ID of the category to filter by
+            The IDs of the categories to filter by
             </summary>
         </member>
-        <member name="P:ecommerceAPI.Controllers.ProductFilterDto.AttributeFilters">
+        <member name="P:ecommerceAPI.Controllers.ProductFilterDto.AttributeValues">
             <summary>
-            The list of attribute filters to apply
-            </summary>
-        </member>
-        <member name="T:ecommerceAPI.Controllers.AttributeFilterDto">
-            <summary>
-            Data transfer object for attribute filtering
-            </summary>
-        </member>
-        <member name="P:ecommerceAPI.Controllers.AttributeFilterDto.CategoryAttributeId">
-            <summary>
-            The ID of the category attribute
-            </summary>
-        </member>
-        <member name="P:ecommerceAPI.Controllers.AttributeFilterDto.Value">
-            <summary>
-            The value of the attribute to filter by
+            Dictionary of attribute values to filter by
+            Key: AttributeId (as string)
+            Value: List of attribute values to match
             </summary>
         </member>
         <member name="T:ecommerceAPI.Controllers.ProductResponseDto">

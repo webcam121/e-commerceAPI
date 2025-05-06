@@ -150,7 +150,7 @@ public class ProductController : ControllerBase
     /// <param name="categoryId">Category ID</param>
     /// <param name="image">Product image file</param>
     /// <param name="isRecommended">Whether the product is recommended</param>
-    /// <param name="attributeValueIds">List of attribute value IDs</param>
+    /// <param name="attributeValueIds">Comma-separated list of attribute value IDs</param>
     /// <returns>The created product</returns>
     [HttpPost]
     public async Task<ActionResult<Product>> CreateProduct(
@@ -161,7 +161,7 @@ public class ProductController : ControllerBase
         [FromForm][Required] int categoryId,
         [FromForm] IFormFile? image,
         [FromForm] bool isRecommended = false,
-        [FromForm] List<int>? attributeValueIds = null)
+        [FromForm] string? attributeValueIds = null)
     {
         // Validate category exists
         if (!await _context.Categories.AnyAsync(c => c.Id == categoryId))
@@ -204,17 +204,25 @@ public class ProductController : ControllerBase
         await _context.SaveChangesAsync();
 
         // Add attribute values if provided
-        if (attributeValueIds != null && attributeValueIds.Any())
+        if (!string.IsNullOrEmpty(attributeValueIds))
         {
-            var productAttributeValues = attributeValueIds.Select(attributeValueId => 
-                new ProductAttributeValue 
-                { 
-                    ProductId = product.Id, 
-                    AttributeValueId = attributeValueId 
-                });
+            var attributeValueIdArray = attributeValueIds.Split(',')
+                .Select(id => int.TryParse(id.Trim(), out var parsedId) ? parsedId : 0)
+                .Where(id => id != 0)
+                .ToList();
 
-            await _context.ProductAttributeValues.AddRangeAsync(productAttributeValues);
-            await _context.SaveChangesAsync();
+            if (attributeValueIdArray.Any())
+            {
+                var productAttributeValues = attributeValueIdArray.Select(attributeValueId => 
+                    new ProductAttributeValue 
+                    { 
+                        ProductId = product.Id, 
+                        AttributeValueId = attributeValueId 
+                    });
+
+                await _context.ProductAttributeValues.AddRangeAsync(productAttributeValues);
+                await _context.SaveChangesAsync();
+            }
         }
 
         return CreatedAtAction(nameof(GetProduct), new { id = product.Id }, product);
@@ -231,7 +239,7 @@ public class ProductController : ControllerBase
     /// <param name="categoryId">Category ID</param>
     /// <param name="image">Product image file</param>
     /// <param name="isRecommended">Whether the product is recommended</param>
-    /// <param name="attributeValueIds">List of attribute value IDs</param>
+    /// <param name="attributeValueIds">Comma-separated list of attribute value IDs</param>
     /// <returns>No content if successful</returns>
     [HttpPut("{id}")]
     public async Task<IActionResult> UpdateProduct(
@@ -243,7 +251,7 @@ public class ProductController : ControllerBase
         [FromForm][Required] int categoryId,
         [FromForm] IFormFile? image,
         [FromForm] bool isRecommended = false,
-        [FromForm] List<int>? attributeValueIds = null)
+        [FromForm] string? attributeValueIds = null)
     {
         var existingProduct = await _context.Products.FindAsync(id);
         if (existingProduct == null)
@@ -290,9 +298,14 @@ public class ProductController : ControllerBase
             _context.ProductAttributeValues.RemoveRange(existingAttributeValues);
 
             // Add new attribute values
-            if (attributeValueIds.Any())
+            var attributeValueIdArray = attributeValueIds.Split(',')
+                .Select(id => int.TryParse(id.Trim(), out var parsedId) ? parsedId : 0)
+                .Where(id => id != 0)
+                .ToList();
+
+            if (attributeValueIdArray.Any())
             {
-                var newAttributeValues = attributeValueIds.Select(attributeValueId =>
+                var newAttributeValues = attributeValueIdArray.Select(attributeValueId =>
                     new ProductAttributeValue
                     {
                         ProductId = id,
@@ -395,7 +408,7 @@ public class ProductController : ControllerBase
     /// <param name="filter">The filter criteria</param>
     /// <returns>A list of filtered products</returns>
     [HttpPost("filter")]
-    public async Task<ActionResult<IEnumerable<Product>>> FilterProducts(ProductFilterDto filter)
+    public async Task<ActionResult<IEnumerable<ProductResponseDto>>> FilterProducts(ProductFilterDto filter)
     {
         var query = _context.Products
             .Include(p => p.Category)
@@ -404,24 +417,56 @@ public class ProductController : ControllerBase
                     .ThenInclude(av => av.CategoryAttribute)
             .AsQueryable();
 
-        // Filter by category
-        if (filter.CategoryId.HasValue)
+        // First, filter by categories if provided
+        if (filter.CategoryIds != null && filter.CategoryIds.Any())
         {
-            query = query.Where(p => p.CategoryId == filter.CategoryId.Value);
+            query = query.Where(p => filter.CategoryIds.Contains(p.CategoryId));
         }
 
-        // Filter by category attributes and their values
-        if (filter.AttributeFilters != null && filter.AttributeFilters.Any())
+        // Then, apply attribute filters if provided
+        if (filter.AttributeValues != null && filter.AttributeValues.Any())
         {
-            foreach (var attrFilter in filter.AttributeFilters)
+            // For each attribute filter
+            foreach (var attrFilter in filter.AttributeValues)
             {
-                query = query.Where(p => p.AttributeValues
-                    .Any(pav => pav.AttributeValue.CategoryAttributeId == attrFilter.CategoryAttributeId &&
-                               pav.AttributeValue.Value == attrFilter.Value));
+                var attributeId = int.Parse(attrFilter.Key);
+                var values = attrFilter.Value;
+
+                // Create a subquery for products that match this attribute filter
+                var matchingProductIds = await _context.ProductAttributeValues
+                    .Where(pav => pav.AttributeValue.CategoryAttributeId == attributeId &&
+                                 values.Contains(pav.AttributeValue.Value))
+                    .Select(pav => pav.ProductId)
+                    .ToListAsync();
+
+                // Apply the filter to the main query
+                query = query.Where(p => matchingProductIds.Contains(p.Id));
             }
         }
 
-        return await query.ToListAsync();
+        var products = await query.ToListAsync();
+
+        return products.Select(p => new ProductResponseDto
+        {
+            Id = p.Id,
+            Name = p.Name,
+            Description = p.Description,
+            Price = p.Price,
+            StockQuantity = p.StockQuantity,
+            CategoryId = p.CategoryId,
+            CategoryName = p.Category.Name,
+            ImageBase64 = p.ImageBase64,
+            ImageContentType = p.ImageContentType,
+            CreatedAt = p.CreatedAt,
+            UpdatedAt = p.UpdatedAt,
+            IsRecommended = p.IsRecommended,
+            Attributes = p.AttributeValues.Select(pav => new ProductAttributeDto
+            {
+                AttributeId = pav.AttributeValue.CategoryAttributeId,
+                AttributeName = pav.AttributeValue.CategoryAttribute.Name,
+                Value = pav.AttributeValue.Value
+            }).ToList()
+        }).ToList();
     }
 
     private bool ProductExists(int id)
@@ -436,32 +481,16 @@ public class ProductController : ControllerBase
 public class ProductFilterDto
 {
     /// <summary>
-    /// The ID of the category to filter by
+    /// The IDs of the categories to filter by
     /// </summary>
-    public int? CategoryId { get; set; }
+    public List<int>? CategoryIds { get; set; }
 
     /// <summary>
-    /// The list of attribute filters to apply
+    /// Dictionary of attribute values to filter by
+    /// Key: AttributeId (as string)
+    /// Value: List of attribute values to match
     /// </summary>
-    public List<AttributeFilterDto>? AttributeFilters { get; set; }
-}
-
-/// <summary>
-/// Data transfer object for attribute filtering
-/// </summary>
-public class AttributeFilterDto
-{
-    /// <summary>
-    /// The ID of the category attribute
-    /// </summary>
-    [Required]
-    public int CategoryAttributeId { get; set; }
-
-    /// <summary>
-    /// The value of the attribute to filter by
-    /// </summary>
-    [Required]
-    public string Value { get; set; } = string.Empty;
+    public Dictionary<string, List<string>>? AttributeValues { get; set; }
 }
 
 /// <summary>
